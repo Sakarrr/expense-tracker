@@ -1,23 +1,13 @@
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
+import { bsMonthKeyOf, bsMonthLabel, formatBsDate } from './nepaliDate.js'
 
-// "2026-09" -> "September 2026"
-export function monthLabel(monthKey) {
-  const [year, month] = monthKey.split('-')
-  return `${MONTH_NAMES[Number(month) - 1]} ${year}`
-}
+// "2026-09-10" (AD) -> "2083-05" (BS year-month key)
+export const monthKeyOf = bsMonthKeyOf
 
-// "2026-09-10" -> "2026-09"
-export function monthKeyOf(dateString) {
-  return dateString.slice(0, 7)
-}
+// "2083-05" -> "Ashwin 2083"
+export const monthLabel = bsMonthLabel
 
-export function formatDate(dateString) {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
-}
+// "2026-09-10" (AD) -> "30 Bhadra 2083" (BS)
+export const formatDate = formatBsDate
 
 export function formatAmount(amount) {
   return amount.toLocaleString('en-US')
