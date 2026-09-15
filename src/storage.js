@@ -3,9 +3,9 @@
 const AUTH_KEY = 'expense-tracker-auth'
 const TX_KEY = 'expense-tracker-transactions'
 
-// Static login credentials.
-const VALID_EMAIL = 'test@test.com'
-const VALID_PASSWORD = '12356'
+// Login credentials, injected at build time via env vars.
+const VALID_EMAIL = import.meta.env.VITE_LOGIN_EMAIL
+const VALID_PASSWORD = import.meta.env.VITE_LOGIN_PASSWORD
 
 const seedTransactions = [
   { id: 1, date: '2026-09-10', description: 'Salary', type: 'income', category: 'Salary', amount: 65000 },

@@ -24,6 +24,9 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          VITE_LOGIN_EMAIL: ${{ secrets.VITE_LOGIN_EMAIL }}
+          VITE_LOGIN_PASSWORD: ${{ secrets.VITE_LOGIN_PASSWORD }}
 
       - name: Deploy to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
