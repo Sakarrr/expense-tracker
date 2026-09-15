@@ -71,10 +71,6 @@ export default function Login({ onLoginSuccess }) {
             >
               Sign in
             </button>
-
-            <p className="text-center text-sm text-gray-500">
-              Use <span className="font-medium">test@test.com</span> / <span className="font-medium">12356</span>
-            </p>
           </form>
         </div>
       </div>
