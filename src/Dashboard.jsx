@@ -1,12 +1,15 @@
 import { useState } from 'react'
-import { getTransactions, addTransaction, logout } from './storage.js'
-import { monthLabel, monthKeyOf, formatDate, formatAmount } from './utils.js'
+import { getTransactions, addTransaction, logout, getCalendarPreference, setCalendarPreference } from './storage.js'
+import { CALENDARS, formatAmount } from './utils.js'
 import AddTransactionModal from './AddTransactionModal.jsx'
 
 export default function Dashboard({ onLogout }) {
   const [transactions, setTransactions] = useState(getTransactions())
+  const [calendar, setCalendar] = useState(getCalendarPreference())
   const [selectedMonth, setSelectedMonth] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+
+  const { monthKeyOf, monthLabel, formatDate } = CALENDARS[calendar]
 
   const months = [...new Set(transactions.map((tx) => monthKeyOf(tx.date)))].sort().reverse()
   const activeMonth = selectedMonth || months[0] || ''
@@ -20,6 +23,14 @@ export default function Dashboard({ onLogout }) {
     setTransactions(updated)
     setSelectedMonth(monthKeyOf(newTransaction.date))
     setModalOpen(false)
+  }
+
+  function handleCalendarChange(nextCalendar) {
+    setCalendar(nextCalendar)
+    setCalendarPreference(nextCalendar)
+    // The current AD/BS month keys aren't comparable across calendars,
+    // so fall back to "the month containing today" in the new calendar.
+    setSelectedMonth('')
   }
 
   function handleLogout() {
@@ -59,12 +70,26 @@ export default function Dashboard({ onLogout }) {
             <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
             <p className="text-gray-500">Track your income and expenses.</p>
           </div>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-5 py-3"
-          >
-            + Add transaction
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+              {Object.values(CALENDARS).map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => handleCalendarChange(c.key)}
+                  className={`px-4 py-3 text-sm font-semibold ${calendar === c.key ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg px-5 py-3"
+            >
+              + Add transaction
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between mb-4">
@@ -123,7 +148,7 @@ export default function Dashboard({ onLogout }) {
       </main>
 
       {modalOpen && (
-        <AddTransactionModal onSave={handleSave} onCancel={() => setModalOpen(false)} />
+        <AddTransactionModal calendar={calendar} onSave={handleSave} onCancel={() => setModalOpen(false)} />
       )}
     </div>
   )

@@ -4,7 +4,14 @@ import { BS_MONTH_NAMES, bsToAdIso, daysInBsMonth, todayBs } from './nepaliDate.
 const today = todayBs()
 const BS_YEARS = Array.from({ length: 12 }, (_, i) => today.year - 10 + i)
 
-export default function AddTransactionModal({ onSave, onCancel }) {
+function todayAdIso() {
+  const now = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
+export default function AddTransactionModal({ calendar, onSave, onCancel }) {
+  const [adDate, setAdDate] = useState(todayAdIso())
   const [bsYear, setBsYear] = useState(today.year)
   const [bsMonth, setBsMonth] = useState(today.month)
   const [bsDay, setBsDay] = useState(today.date)
@@ -29,7 +36,7 @@ export default function AddTransactionModal({ onSave, onCancel }) {
   function handleSubmit(event) {
     event.preventDefault()
     onSave({
-      date: bsToAdIso(bsYear, bsMonth, bsDay),
+      date: calendar === 'AD' ? adDate : bsToAdIso(bsYear, bsMonth, bsDay),
       description,
       type,
       category,
@@ -43,39 +50,51 @@ export default function AddTransactionModal({ onSave, onCancel }) {
         <h3 className="text-xl font-bold mb-4">Add transaction</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1">DATE (B.S.)</label>
-            <div className="grid grid-cols-3 gap-2">
-              <select
-                aria-label="Year (B.S.)"
-                value={bsYear}
-                onChange={(event) => handleYearChange(Number(event.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-2 py-2"
-              >
-                {BS_YEARS.map((year) => (
-                  <option key={year} value={year}>{year}</option>
-                ))}
-              </select>
-              <select
-                aria-label="Month (B.S.)"
-                value={bsMonth}
-                onChange={(event) => handleMonthChange(Number(event.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-2 py-2"
-              >
-                {BS_MONTH_NAMES.map((name, index) => (
-                  <option key={name} value={index}>{name}</option>
-                ))}
-              </select>
-              <select
-                aria-label="Day (B.S.)"
-                value={bsDay}
-                onChange={(event) => setBsDay(Number(event.target.value))}
-                className="w-full border border-gray-300 rounded-lg px-2 py-2"
-              >
-                {days.map((day) => (
-                  <option key={day} value={day}>{day}</option>
-                ))}
-              </select>
-            </div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              DATE ({calendar === 'AD' ? 'A.D.' : 'B.S.'})
+            </label>
+            {calendar === 'AD' ? (
+              <input
+                type="date"
+                required
+                value={adDate}
+                onChange={(event) => setAdDate(event.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2"
+              />
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                <select
+                  aria-label="Year (B.S.)"
+                  value={bsYear}
+                  onChange={(event) => handleYearChange(Number(event.target.value))}
+                  className="w-full border border-gray-300 rounded-lg px-2 py-2"
+                >
+                  {BS_YEARS.map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Month (B.S.)"
+                  value={bsMonth}
+                  onChange={(event) => handleMonthChange(Number(event.target.value))}
+                  className="w-full border border-gray-300 rounded-lg px-2 py-2"
+                >
+                  {BS_MONTH_NAMES.map((name, index) => (
+                    <option key={name} value={index}>{name}</option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Day (B.S.)"
+                  value={bsDay}
+                  onChange={(event) => setBsDay(Number(event.target.value))}
+                  className="w-full border border-gray-300 rounded-lg px-2 py-2"
+                >
+                  {days.map((day) => (
+                    <option key={day} value={day}>{day}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">DESCRIPTION</label>

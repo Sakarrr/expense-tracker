@@ -17,7 +17,7 @@ function pad(n) {
 // `new Date("YYYY-MM-DD")` parses as UTC, which can shift the calendar day
 // once converted back to local time near timezone boundaries. Parse the
 // parts and build a local-time Date instead.
-function parseAdIsoLocal(adIso) {
+export function parseAdIsoLocal(adIso) {
   const [year, month, day] = adIso.split('-').map(Number)
   return new Date(year, month - 1, day)
 }

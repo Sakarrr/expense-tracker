@@ -2,6 +2,7 @@
 
 const AUTH_KEY = 'expense-tracker-auth'
 const TX_KEY = 'expense-tracker-transactions'
+const CALENDAR_KEY = 'expense-tracker-calendar'
 
 // Login credentials, injected at build time via env vars.
 const VALID_EMAIL = import.meta.env.VITE_LOGIN_EMAIL
@@ -47,4 +48,12 @@ export function addTransaction(transaction) {
   transactions.unshift(transaction)
   localStorage.setItem(TX_KEY, JSON.stringify(transactions))
   return transactions
+}
+
+export function getCalendarPreference() {
+  return localStorage.getItem(CALENDAR_KEY) === 'AD' ? 'AD' : 'BS'
+}
+
+export function setCalendarPreference(calendar) {
+  localStorage.setItem(CALENDAR_KEY, calendar)
 }
