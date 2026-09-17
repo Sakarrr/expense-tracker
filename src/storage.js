@@ -50,6 +50,20 @@ export function addTransaction(transaction) {
   return transactions
 }
 
+export function updateTransaction(transaction) {
+  const transactions = getTransactions().map((tx) =>
+    tx.id === transaction.id ? transaction : tx
+  )
+  localStorage.setItem(TX_KEY, JSON.stringify(transactions))
+  return transactions
+}
+
+export function deleteTransaction(id) {
+  const transactions = getTransactions().filter((tx) => tx.id !== id)
+  localStorage.setItem(TX_KEY, JSON.stringify(transactions))
+  return transactions
+}
+
 export function getCalendarPreference() {
   return localStorage.getItem(CALENDAR_KEY) === 'AD' ? 'AD' : 'BS'
 }

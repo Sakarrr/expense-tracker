@@ -1,5 +1,13 @@
 import { useState } from 'react'
-import { getTransactions, addTransaction, logout, getCalendarPreference, setCalendarPreference } from './storage.js'
+import {
+  getTransactions,
+  addTransaction,
+  updateTransaction,
+  deleteTransaction,
+  logout,
+  getCalendarPreference,
+  setCalendarPreference,
+} from './storage.js'
 import { CALENDARS, formatAmount } from './utils.js'
 import AddTransactionModal from './AddTransactionModal.jsx'
 
@@ -8,21 +16,40 @@ export default function Dashboard({ onLogout }) {
   const [calendar, setCalendar] = useState(getCalendarPreference())
   const [selectedMonth, setSelectedMonth] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  const [editingTransaction, setEditingTransaction] = useState(null)
 
   const { monthKeyOf, monthLabel, formatDate } = CALENDARS[calendar]
 
-  const months = [...new Set(transactions.map((tx) => monthKeyOf(tx.date)))].sort().reverse()
-  const activeMonth = selectedMonth || months[0] || ''
+  const months = [...new Set(transactions.map((tx) => monthKeyOf(tx.date)))].sort()
+  const activeMonth = selectedMonth || months[months.length - 1] || ''
 
   const filtered = transactions
     .filter((tx) => monthKeyOf(tx.date) === activeMonth)
     .sort((a, b) => (a.date < b.date ? 1 : -1))
 
-  function handleSave(newTransaction) {
-    const updated = addTransaction(newTransaction)
+  function handleSave(transaction) {
+    const updated = editingTransaction
+      ? updateTransaction(transaction)
+      : addTransaction(transaction)
     setTransactions(updated)
-    setSelectedMonth(monthKeyOf(newTransaction.date))
+    setSelectedMonth(monthKeyOf(transaction.date))
     setModalOpen(false)
+    setEditingTransaction(null)
+  }
+
+  function handleEdit(transaction) {
+    setEditingTransaction(transaction)
+    setModalOpen(true)
+  }
+
+  function handleDelete(transaction) {
+    if (!window.confirm(`Delete "${transaction.description}"?`)) return
+    setTransactions(deleteTransaction(transaction.id))
+  }
+
+  function closeModal() {
+    setModalOpen(false)
+    setEditingTransaction(null)
   }
 
   function handleCalendarChange(nextCalendar) {
@@ -114,12 +141,13 @@ export default function Dashboard({ onLogout }) {
                 <th className="px-6 py-4 font-medium">Type</th>
                 <th className="px-6 py-4 font-medium">Category</th>
                 <th className="px-6 py-4 font-medium text-right">Amount</th>
+                <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="px-6 py-10 text-center text-gray-400">No transactions this month.</td>
+                  <td colSpan="6" className="px-6 py-10 text-center text-gray-400">No transactions this month.</td>
                 </tr>
               )}
               {filtered.map((tx) => (
@@ -135,6 +163,20 @@ export default function Dashboard({ onLogout }) {
                   <td className={`px-6 py-4 text-right font-semibold ${tx.type === 'income' ? 'text-green-700' : 'text-red-600'}`}>
                     {tx.type === 'income' ? '+' : '-'} NPR {formatAmount(tx.amount)}
                   </td>
+                  <td className="px-6 py-4 text-right whitespace-nowrap">
+                    <button
+                      onClick={() => handleEdit(tx)}
+                      className="text-sm font-semibold text-blue-600 hover:text-blue-700 mr-4"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(tx)}
+                      className="text-sm font-semibold text-red-600 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -148,7 +190,12 @@ export default function Dashboard({ onLogout }) {
       </main>
 
       {modalOpen && (
-        <AddTransactionModal calendar={calendar} onSave={handleSave} onCancel={() => setModalOpen(false)} />
+        <AddTransactionModal
+          calendar={calendar}
+          editing={editingTransaction}
+          onSave={handleSave}
+          onCancel={closeModal}
+        />
       )}
     </div>
   )
