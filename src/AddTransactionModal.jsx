@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { BS_MONTH_NAMES, bsToAdIso, daysInBsMonth, todayBs } from './nepaliDate.js'
+import { adIsoToBs, BS_MONTH_NAMES, bsToAdIso, daysInBsMonth, todayBs } from './nepaliDate.js'
 import { CATEGORIES } from './utils.js'
 
 const today = todayBs()
@@ -11,18 +11,24 @@ function todayAdIso() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
-export default function AddTransactionModal({ calendar, onSave, onCancel }) {
-  const [adDate, setAdDate] = useState(todayAdIso())
-  const [bsYear, setBsYear] = useState(today.year)
-  const [bsMonth, setBsMonth] = useState(today.month)
-  const [bsDay, setBsDay] = useState(today.date)
-  const [description, setDescription] = useState('')
-  const [type, setType] = useState('expense')
-  const [category, setCategory] = useState(CATEGORIES.expense[0])
-  const [amount, setAmount] = useState('')
+export default function AddTransactionModal({ calendar, editing, onSave, onCancel }) {
+  const editingBs = editing ? adIsoToBs(editing.date) : null
+
+  const [adDate, setAdDate] = useState(editing ? editing.date : todayAdIso())
+  const [bsYear, setBsYear] = useState(editingBs ? editingBs.year : today.year)
+  const [bsMonth, setBsMonth] = useState(editingBs ? editingBs.month : today.month)
+  const [bsDay, setBsDay] = useState(editingBs ? editingBs.date : today.date)
+  const [description, setDescription] = useState(editing ? editing.description : '')
+  const [type, setType] = useState(editing ? editing.type : 'expense')
+  const [category, setCategory] = useState(editing ? editing.category : CATEGORIES.expense[0])
+  const [amount, setAmount] = useState(editing ? String(editing.amount) : '')
 
   const dayCount = useMemo(() => daysInBsMonth(bsYear, bsMonth), [bsYear, bsMonth])
   const days = useMemo(() => Array.from({ length: dayCount }, (_, i) => i + 1), [dayCount])
+
+  const categoryOptions = CATEGORIES[type].includes(category)
+    ? CATEGORIES[type]
+    : [category, ...CATEGORIES[type]]
 
   function handleYearChange(nextYear) {
     setBsYear(nextYear)
@@ -42,6 +48,7 @@ export default function AddTransactionModal({ calendar, onSave, onCancel }) {
   function handleSubmit(event) {
     event.preventDefault()
     onSave({
+      ...(editing ? { id: editing.id } : {}),
       date: calendar === 'AD' ? adDate : bsToAdIso(bsYear, bsMonth, bsDay),
       description,
       type,
@@ -53,7 +60,7 @@ export default function AddTransactionModal({ calendar, onSave, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl w-full max-w-md p-6">
-        <h3 className="text-xl font-bold mb-4">Add transaction</h3>
+        <h3 className="text-xl font-bold mb-4">{editing ? 'Edit transaction' : 'Add transaction'}</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">
@@ -131,7 +138,7 @@ export default function AddTransactionModal({ calendar, onSave, onCancel }) {
               onChange={(event) => setCategory(event.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
             >
-              {CATEGORIES[type].map((name) => (
+              {categoryOptions.map((name) => (
                 <option key={name} value={name}>{name}</option>
               ))}
             </select>
@@ -162,7 +169,7 @@ export default function AddTransactionModal({ calendar, onSave, onCancel }) {
               type="submit"
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold"
             >
-              Save
+              {editing ? 'Save changes' : 'Save'}
             </button>
           </div>
         </form>
