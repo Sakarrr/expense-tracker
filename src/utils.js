@@ -30,3 +30,8 @@ export const CALENDARS = {
 export function formatAmount(amount) {
   return amount.toLocaleString('en-US')
 }
+
+export const CATEGORIES = {
+  expense: ['Food & Dining', 'Transport', 'Utilities', 'Rent', 'Shopping', 'Health', 'Entertainment', 'Education', 'Other'],
+  income: ['Salary', 'Freelance', 'Business', 'Investment', 'Gift', 'Other'],
+}

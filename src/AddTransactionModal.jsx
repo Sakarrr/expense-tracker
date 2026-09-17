@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { BS_MONTH_NAMES, bsToAdIso, daysInBsMonth, todayBs } from './nepaliDate.js'
+import { CATEGORIES } from './utils.js'
 
 const today = todayBs()
 const BS_YEARS = Array.from({ length: 12 }, (_, i) => today.year - 10 + i)
@@ -17,7 +18,7 @@ export default function AddTransactionModal({ calendar, onSave, onCancel }) {
   const [bsDay, setBsDay] = useState(today.date)
   const [description, setDescription] = useState('')
   const [type, setType] = useState('expense')
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useState(CATEGORIES.expense[0])
   const [amount, setAmount] = useState('')
 
   const dayCount = useMemo(() => daysInBsMonth(bsYear, bsMonth), [bsYear, bsMonth])
@@ -31,6 +32,11 @@ export default function AddTransactionModal({ calendar, onSave, onCancel }) {
   function handleMonthChange(nextMonth) {
     setBsMonth(nextMonth)
     setBsDay((day) => Math.min(day, daysInBsMonth(bsYear, nextMonth)))
+  }
+
+  function handleTypeChange(nextType) {
+    setType(nextType)
+    setCategory(CATEGORIES[nextType][0])
   }
 
   function handleSubmit(event) {
@@ -111,7 +117,7 @@ export default function AddTransactionModal({ calendar, onSave, onCancel }) {
             <label className="block text-xs font-semibold text-gray-600 mb-1">TYPE</label>
             <select
               value={type}
-              onChange={(event) => setType(event.target.value)}
+              onChange={(event) => handleTypeChange(event.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
             >
               <option value="expense">Expense</option>
@@ -120,14 +126,15 @@ export default function AddTransactionModal({ calendar, onSave, onCancel }) {
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">CATEGORY</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Food & Dining"
+            <select
               value={category}
               onChange={(event) => setCategory(event.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            />
+            >
+              {CATEGORIES[type].map((name) => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1">AMOUNT (NPR)</label>
